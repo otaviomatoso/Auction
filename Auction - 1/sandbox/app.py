@@ -1,26 +1,22 @@
 from flask import Flask, request
-from requests import post, put
-import json
-from random import randint, uniform
+from requests import post
+import json, re
 
 app = Flask(__name__)
 
 # Global variables
 url_base = 'http://192.168.1.106:8080/' # jacamo-rest address
-my_name = 'python'
 my_address = 'http://127.0.0.1:5000'
-id = 1
-task = ''
-offer = 0
+msg_id = 1
+price = 30
 
 # --- FUNCTIONS ---
-
-def wp_register(name, address):
-    body = json.dumps({"agentid": f"{name}", "uri": f"{address}"})
-    endpoint = 'wp'
+def create_agent(name):
+    print(f'Creating agent {name}')
+    endpoint = f'agents/{name}'
     url = url_base + endpoint
-    headers = {'Content-Type':'application/json'}
-    post(url, headers=headers, data=body)
+    req = post(url)
+    return req.text
 
 def create_msg(sender,receiver,performative,content,msgId):
     msg = json.dumps({"sender": f"{sender}", "receiver": f"{receiver}", "performative": f"{performative}", "content": f"{content}", "msgId": f"{msgId}"})
@@ -39,30 +35,33 @@ def process_content(content):
     return d
 
 def process_msg(literal, sender):
-    if (literal['functor'] == 'focus'):
-        art_name = literal["args"]
-        print(f'\nARTNAME = {art_name}')
-        endpoint = f'workspaces/market_place/{art_name}/operations/bid'
-        url = url_base + endpoint
-        value = f'[{uniform(0, 10)}]'
-        print(f'\nMY PROPOSAL = {value}')
-        headers = {'Content-Type':'application/json'}
-        put(url, headers=headers, data=value)
+    if (literal['functor'] == 'result'):
+        res = literal["args"]
+        if (res == 'win'):
+            print('I WON THE AUCTION!!!')
+        elif (res == 'loss'):
+            print('I LOST THE AUCTION!!!')
 
-# --- MAIN ---
-print('\nRegistering myself at WP...')
-wp_register(my_name, my_address)
+reply = create_agent('proxy')
+# Regex is used to get the name of the created agent.
+# The name is in the API response, in single quotes.
+# If more than one agent is created using the same name,
+# the given names are as follows: name, name_1, name_2, name_3,...
+my_name = re.findall(r"'([^']*)'", reply)[0] # The result is a list, so the name is at index 0.
+print(f'MY NAME = {my_name}')
 
-# Mailbox to receive messages from agents
-# PS.: When agent acts as client, the path '/mb'
-#      is added at the end of the endpoint
+msg = create_msg(my_name, my_name, 'tell', f'offer({price},\"{my_address}\")', msg_id)
+send_msg(msg,my_name) # tell the agent my 'offer(price,address)''
+msg_id += 1
+msg2 = create_msg(my_name, 'bob', 'achieve', 'start(a7, "beer")', msg_id)
+send_msg(msg2,'bob') # ask auctioneer (bob) to start a new auction
+msg_id += 1
+
 @app.route('/mb', methods=['POST'])
 def mailBox():
-    # print("ENTROU NA MAILBOX")
     msg = json.loads(request.data)
     sender = msg['sender']
     content = msg['content']
-    # print(f'\nI have just received a message from {sender} with the content = {content}')
     literal = process_content(content)
     process_msg(literal, sender)
     return ''

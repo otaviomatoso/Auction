@@ -7,18 +7,12 @@ public class AuctionArtifact extends Artifact {
 
     String currentWinner = "no_winner";
 
-    @OPERATION public void init()  {
+    public void init()  {
         // observable properties
         defineObsProperty("running",     false);
         defineObsProperty("task",        "no_task");
         defineObsProperty("best_bid",    Double.MAX_VALUE);
         defineObsProperty("winner",      new Atom(currentWinner)); // Atom is a Jason type
-        defineObsProperty("cont",      0);
-    }
-
-    @OPERATION public void inc(Double value, Double value2)  {
-        Double sum = value + value2;
-        getObsProperty("cont").updateValue(sum);
     }
 
     @OPERATION public void start(String task)  {
