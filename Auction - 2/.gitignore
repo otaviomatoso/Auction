@@ -1,0 +1,13 @@
+.gradle
+.git
+.settings
+.classpath
+.stop___MAS
+.project
+
+bin
+build
+log
+target
+
+e_r_r_o_r.txt
