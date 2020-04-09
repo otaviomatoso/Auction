@@ -47,7 +47,7 @@ def proxy_agent(price):
 
 @app.route('/auction', methods=['POST'])
 def auction():
-    global msg_id, art_id
+    global msg_id, art_id, result
     body = json.loads(request.data)
     price = body['offer']
     proxy_agent(price)
@@ -55,7 +55,7 @@ def auction():
     send_msg(msg2,'bob') # ask auctioneer (bob) to start a new auction
     art_id += 1
     msg_id += 1
-    global result
+    # global result
     while (result == False):
         pass
     result = False
