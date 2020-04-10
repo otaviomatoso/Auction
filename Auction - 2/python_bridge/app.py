@@ -6,7 +6,7 @@ app = Flask(__name__)
 
 # Global variables
 url_base = 'http://192.168.1.106:8080/' # jacamo-rest address
-my_address = 'http://127.0.0.1:5000'
+my_address = 'http://0.0.0.0:5000'
 art_name = 'a'
 art_id = 1
 msg_id = 1
@@ -50,8 +50,9 @@ def auction():
     global msg_id, art_id, result
     body = json.loads(request.data)
     price = body['offer']
+    task = body['task']
     proxy_agent(price)
-    msg2 = create_msg("python", 'bob', 'achieve', f'start({art_name+str(art_id)}, "beer")', msg_id)
+    msg2 = create_msg("python", 'bob', 'achieve', f'start({art_name+str(art_id)}, {task})', msg_id)
     send_msg(msg2,'bob') # ask auctioneer (bob) to start a new auction
     art_id += 1
     msg_id += 1
@@ -59,7 +60,8 @@ def auction():
     while (result == False):
         pass
     result = False
-    return f'You {res} the auction'
+    return f'Your proposal {price} {res} the auction for {task}'
+    # f'Your proposal {price} won CNP {cnpId} for {task}!'
 
 @app.route('/mb', methods=['POST'])
 def mailBox():
