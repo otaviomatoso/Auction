@@ -61,7 +61,6 @@ def auction():
         pass
     result = False
     return f'Your proposal {price} {res} the auction for {task}'
-    # f'Your proposal {price} won CNP {cnpId} for {task}!'
 
 @app.route('/mb', methods=['POST'])
 def mailBox():
